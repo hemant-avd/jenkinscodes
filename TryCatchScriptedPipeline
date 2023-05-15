@@ -1,0 +1,27 @@
+node('built-in') 
+{
+  stage('ContinuousDownload') 
+  {
+      try
+      {
+          git 'https://github.com/hemant-avd/maven2.git'
+      }
+      catch(Exception e1)
+      {
+          mail bcc: '', body: 'Git admin please check the code', cc: '', from: '', replyTo: '', subject: 'ContinuousDownload failed', to: 'jenadelok@gmail.com'
+          exit(1)
+      }
+  }
+  stage('ContinuousBuild') 
+  {
+      try
+      {
+          sh label: '', script: 'mvn package'
+      }
+      catch(Exception e2)
+      {
+          mail bcc: '', body: ' please check ', cc: '', from: '', replyTo: '', subject: 'Continuous Build failed', to: 'jenadelok@gmail.com'
+          exit(1)
+      }
+  }
+}

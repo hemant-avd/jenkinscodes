@@ -1,0 +1,112 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('ContinuousDownload')
+        {
+            steps
+            {
+                script
+                {
+                   try
+                   {
+                    git 'https://github.com/hemant-avd/maven2.git'
+                   }
+                   catch(Exception e1)
+                   {
+                       mail bcc: '', body: 'Git admin, ContinuousDownload failed please check', cc: '', from: '', replyTo: '', subject: 'ContinuousDownload failed', to: 'hellohemant1992@gmail.com'
+                       exit(1)
+                   }
+                }
+               
+            }
+        }
+         stage('ContinuousBuild')
+        {
+            steps
+            {
+                script
+                {
+                   try
+                   {
+                       sh label: '', script: 'mvn package'
+                   }
+                   catch(Exception e2)
+                   {
+                      mail bcc: '', body: 'failed please check', cc: '', from: '', replyTo: '', subject: 'Continuous build failed', to: 'hellohemant1992@gmail.com'
+                      exit(1)
+                   }
+                }
+               
+            }
+        }
+        stage('ContinuousDeployment')
+        {
+            steps
+            {
+                script
+                {
+                   try
+                   {
+                      deploy adapters: [tomcat9(credentialsId: '285c462c-eea1-4698-9339-00cdb32e15b9', path: '', url: 'http://172.31.90.3:8080')], contextPath: 'testapp2', war: '**/*.war'
+                   }
+                   catch(Exception e3)
+                   {
+                       mail bcc: '', body: 'failed please check', cc: '', from: '', replyTo: '', subject: 'Continuous deploy failed', to: 'hellohemant1992@gmail.com'
+                       exit(1)
+                   }
+                }
+                
+            }
+        }
+        stage('ContinuousTesting')
+        {
+            steps
+            {
+                script
+                {
+                                    
+                    try
+                    {
+                        git 'https://github.com/hemant-avd/FunctionalTesting.git'
+                        sh 'java -jar /var/lib/jenkins/workspace/DeclarativePipelineJob/testing.jar'
+                    }
+                    catch(Exception e4)
+                    {
+                       mail bcc: '', body: 'failed please check', cc: '', from: '', replyTo: '', subject: 'Continuous testing failed', to: 'hellohemant1992@gmail.com'
+                       exit(1)
+                    }
+                }
+                
+            }
+        }
+        stage('ContinuousDelivery')
+        {
+            steps
+            {
+                script
+                {
+                   try
+                   { 
+                        input message: 'Please approve Deployment', submitter: 'admin'
+                         deploy adapters: [tomcat9(credentialsId: '285c462c-eea1-4698-9339-00cdb32e15b9', path: '', url: 'http://172.31.81.175:8080')], contextPath: 'prodapp2', war: '**/*.war'
+                    }
+                    catch(Exception e5)
+                    {
+                        mail bcc: '', body: 'failed please check', cc: '', from: '', replyTo: '', subject: 'Continuous delivery failed', to: 'hellohemant1992@gmail.com'
+                    }
+                }
+            }
+        }
+       
+    }
+  
+       
+            
+    
+ 
+    
+    
+    
+}
